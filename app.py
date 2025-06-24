@@ -1,45 +1,24 @@
-# ===== run_app.py =====
+# app.py
 """
-Quick launcher for ASTHA application
+ASTHA - Hajj Treasury Analytics
+Main entry point for Streamlit Cloud deployment
 """
-import subprocess
+
 import sys
 import os
 
-def main():
-    """Launch the Streamlit app"""
-    # Check if main.py exists
-    if not os.path.exists("app/main.py"):
-        print("❌ app/main.py not found!")
-        print("Please make sure you have the complete ASTHA application files.")
-        return
-    
-    # Check if streamlit is installed
-    try:
-        import streamlit
-    except ImportError:
-        print("❌ Streamlit not installed!")
-        print("Run: pip install streamlit")
-        return
-    
-    print("🚀 Launching ASTHA - Hajj Treasury Analytics...")
-    print("🌐 App will open at: http://localhost:8501")
-    print("⏹️  Press Ctrl+C to stop the application")
-    print("=" * 50)
-    
-    # Launch Streamlit
-    try:
-        subprocess.run([
-            sys.executable, "-m", "streamlit", "run", 
-            "app/main.py",
-            "--server.port=8501",
-            "--server.headless=false"
-        ])
-    except KeyboardInterrupt:
-        print("\n👋 ASTHA application stopped.")
-    except Exception as e:
-        print(f"❌ Error launching app: {e}")
+# Tambahkan path ke folder 'app' agar bisa import modul internal
+sys.path.append(os.path.join(os.path.dirname(__file__), "app"))
 
-if __name__ == "__main__":
+# Jalankan fungsi utama dari app/main.py
+try:
+    from main import main  # Mengimpor fungsi main() dari app/main.py
     main()
-
+except ImportError as e:
+    import streamlit as st
+    st.error(f"❌ Gagal mengimpor aplikasi utama: {e}")
+    st.stop()
+except Exception as e:
+    import streamlit as st
+    st.error(f"❌ Aplikasi gagal dijalankan: {e}")
+    st.stop()
