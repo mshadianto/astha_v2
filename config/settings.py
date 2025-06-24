@@ -10,7 +10,8 @@ class AppConfig:
     """Application configuration"""
     APP_NAME: str = os.getenv("APP_NAME", "ASTHA - Hajj Treasury Analytics")
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
-    DEBUG: bool = os.getenv("DEBUG", "True").lower() == "true"
+    API_BASE_URL = "your_api_url"
+    DEBUG: bool = True
     
     # API Keys
     ALPHA_VANTAGE_API_KEY: str = os.getenv("ALPHA_VANTAGE_API_KEY", "")

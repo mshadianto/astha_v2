@@ -590,7 +590,7 @@ def render_footer_disclaimer():
     st.markdown("---")
     st.markdown(f"""
     <div style="text-align: center; color: #6b7280; padding: 1rem;">
-        <p>© 2025 Badan Pengelola Keuangan Haji (BPKH) - Republik Indonesia</p>
+        <p>© 2025 Badan Pengelola Keuangan Haji (BPKH)</p>
         <p><small>Developed with ❤️ by <strong>{AppConfig.DEVELOPER}</strong> | Powered by Streamlit & Python</small></p>
         <p><small>Last Updated: {datetime.now().strftime('%d %B %Y, %H:%M WIB')} | Version: {version_info['full_version']}</small></p>
     </div>
@@ -632,7 +632,7 @@ def main():
         • Enhanced readability with native Streamlit components
         • Better performance with simplified styling
         
-        Developed by **{AppConfig.DEVELOPER}** for BPKH Indonesia.
+        Developed by **{AppConfig.DEVELOPER}** for BPKH.
         """)
     
     # Main header
@@ -641,7 +641,7 @@ def main():
         <h1>🕌 ASTHA <span class="version-badge">v{AppConfig.APP_VERSION}</span></h1>
         <h2>Agentic Sustainability for Hajj Treasury Analytics</h2>
         <p style="font-size: 1.1em; margin-top: 1rem;">
-            Badan Pengelola Keuangan Haji (BPKH) - Republik Indonesia
+            Badan Pengelola Keuangan Haji (BPKH)
         </p>
         <p style="font-size: 0.9em; opacity: 0.9;">
             Powered by AI Agents & Advanced Analytics | {version_info['full_version']}
@@ -729,7 +729,7 @@ def main():
     # Footer sidebar
     st.sidebar.markdown("---")
     st.sidebar.markdown(
-        f"<small style='color: #6b7280;'>© 2025 BPKH Indonesia<br>"
+        f"<small style='color: #6b7280;'>© 2025 Badan Pengelola Keuangan Haji <br>"
         f"Build: {datetime.now().strftime('%H:%M')} WIB</small>", 
         unsafe_allow_html=True
     )
@@ -753,7 +753,11 @@ def main():
 
 # ====== PAGE RENDERING FUNCTIONS ======
 
-def render_dashboard(historical_data, exchange_rates, economic_indicators):
+# Updated render_dashboard function with Indonesia map visualization
+
+# Updated render_dashboard function with Indonesia map visualization (Fixed Version)
+
+def render_dashboard(historical_data, exchange_rates, economic_indicators, engines=None, ai_features_enabled=False):
     st.header("📊 Dashboard Monitoring Keberlanjutan")
     
     # KPI Metrics
@@ -808,25 +812,209 @@ def render_dashboard(historical_data, exchange_rates, economic_indicators):
     
     with col2:
         st.subheader("🗺️ Sebaran Jemaah per Provinsi")
+        
+        # Simplified province data with exactly matching array lengths
         provinces_data = {
-            'Provinsi': ['Jawa Barat', 'Jawa Timur', 'Jawa Tengah', 'Sumatera Utara', 'Lampung', 'Lainnya'],
-            'Jemaah': [420000, 380000, 340000, 180000, 160000, 1020000],
-            'Persentase': [16.8, 15.2, 13.6, 7.2, 6.4, 40.8]
+            'Provinsi': [
+                'Jawa Barat', 'Jawa Timur', 'Jawa Tengah', 'DKI Jakarta', 'Sumatera Utara',
+                'Sumatera Barat', 'Sumatera Selatan', 'Lampung', 'Banten', 'DI Yogyakarta',
+                'Kalimantan Selatan', 'Sulawesi Selatan', 'Nusa Tenggara Barat', 'Aceh',
+                'Riau', 'Jambi', 'Bengkulu', 'Kepulauan Riau', 'Kalimantan Tengah',
+                'Kalimantan Timur', 'Kalimantan Barat', 'Kalimantan Utara', 'Sulawesi Tengah',
+                'Sulawesi Tenggara', 'Sulawesi Barat', 'Sulawesi Utara', 'Gorontalo',
+                'Maluku', 'Maluku Utara', 'Papua', 'Papua Barat', 'Nusa Tenggara Timur', 'Bali'
+            ],
+            'Jemaah': [
+                420000, 380000, 340000, 280000, 180000,  # Top 5 provinces
+                160000, 145000, 130000, 125000, 110000,  # Next 5
+                95000, 85000, 80000, 75000, 70000,       # Next 5
+                65000, 60000, 55000, 50000, 45000,       # Next 5
+                40000, 35000, 30000, 28000, 25000,       # Next 5
+                22000, 20000, 18000, 15000, 12000,       # Next 5
+                10000, 8000, 6000                        # Last 3
+            ]
         }
+        
+        # Verify array lengths are equal
+        assert len(provinces_data['Provinsi']) == len(provinces_data['Jemaah']), "Array lengths must match!"
+        
+        # Calculate percentages and create DataFrame
+        total_jemaah = sum(provinces_data['Jemaah'])
+        provinces_data['Persentase'] = [(j/total_jemaah)*100 for j in provinces_data['Jemaah']]
+        
         df_provinces = pd.DataFrame(provinces_data)
         
-        fig = px.pie(
-            df_provinces, 
+        # Create pie chart for top 10 provinces + others
+        top_10 = df_provinces.head(10).copy()
+        others_sum = df_provinces.tail(len(df_provinces)-10)['Jemaah'].sum()
+        others_pct = (others_sum/total_jemaah)*100
+        
+        top_10_with_others = pd.concat([
+            top_10[['Provinsi', 'Jemaah', 'Persentase']],
+            pd.DataFrame({
+                'Provinsi': ['Provinsi Lainnya'],
+                'Jemaah': [others_sum],
+                'Persentase': [others_pct]
+            })
+        ])
+        
+        fig_pie = px.pie(
+            top_10_with_others, 
             values='Jemaah', 
             names='Provinsi',
-            title="Distribusi 2.5M Jemaah Tunggu",
+            title="Distribusi 2.5M Jemaah Tunggu (Top 10 + Lainnya)",
             color_discrete_sequence=px.colors.qualitative.Set3
         )
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+        fig_pie.update_layout(height=400)
+        st.plotly_chart(fig_pie, use_container_width=True)
     
-    # Economic indicators
+    # New Indonesia Scatter Map Section
+    st.subheader("🗺️ Peta Interaktif Distribusi Jemaah Indonesia")
+    
+    # Add approximate coordinates for provinces
+    coordinates = {
+        'Jawa Barat': [-6.9175, 107.6191], 'Jawa Timur': [-7.2504, 112.7688], 
+        'Jawa Tengah': [-7.3069, 110.1765], 'DKI Jakarta': [-6.2088, 106.8456], 
+        'Sumatera Utara': [3.5952, 98.6722], 'Sumatera Barat': [-0.7893, 100.6500],
+        'Sumatera Selatan': [-3.3194, 103.9140], 'Lampung': [-4.5585, 105.4068],
+        'Banten': [-6.4058, 106.0640], 'DI Yogyakarta': [-7.8753, 110.4262],
+        'Kalimantan Selatan': [-3.0926, 115.2837], 'Sulawesi Selatan': [-3.6687, 119.9740],
+        'Nusa Tenggara Barat': [-8.6529, 117.3616], 'Aceh': [4.6951, 96.7494],
+        'Riau': [0.2933, 101.7068], 'Jambi': [-1.4852, 103.6118],
+        'Bengkulu': [-3.8004, 102.2655], 'Kepulauan Riau': [3.9456, 108.1429],
+        'Kalimantan Tengah': [-1.6814, 113.3823], 'Kalimantan Timur': [1.6406, 116.4194],
+        'Kalimantan Barat': [-0.2787, 111.4752], 'Kalimantan Utara': [2.7200, 116.0553],
+        'Sulawesi Tengah': [-1.4300, 121.4456], 'Sulawesi Tenggara': [-4.1468, 122.1750],
+        'Sulawesi Barat': [-2.8441, 119.2320], 'Sulawesi Utara': [0.6246, 123.9750],
+        'Gorontalo': [0.6999, 122.4467], 'Maluku': [-3.2385, 130.1453],
+        'Maluku Utara': [1.5709, 127.8088], 'Papua': [-4.2699, 138.0804],
+        'Papua Barat': [-1.3361, 133.1747], 'Nusa Tenggara Timur': [-8.6573, 121.0794],
+        'Bali': [-8.4095, 115.1889]
+    }
+    
+    # Add coordinates to dataframe
+    df_provinces['Latitude'] = df_provinces['Provinsi'].map(lambda x: coordinates.get(x, [0, 0])[0])
+    df_provinces['Longitude'] = df_provinces['Provinsi'].map(lambda x: coordinates.get(x, [0, 0])[1])
+    
+    # Create scatter map
+    try:
+        fig_map = px.scatter_geo(
+            df_provinces,
+            lat='Latitude',
+            lon='Longitude',
+            size='Jemaah',
+            color='Jemaah',
+            hover_name='Provinsi',
+            hover_data={
+                'Jemaah': ':,.0f',
+                'Persentase': ':.1f%',
+                'Latitude': False,
+                'Longitude': False
+            },
+            color_continuous_scale='Reds',
+            title="Distribusi Jemaah Tunggu per Provinsi di Indonesia",
+            labels={'Jemaah': 'Jumlah Jemaah'},
+            size_max=50
+        )
+        
+        # Update map layout for Indonesia focus
+        fig_map.update_layout(
+            geo=dict(
+                showframe=False,
+                showcoastlines=True,
+                projection_type='natural earth',
+                center=dict(lat=-2.5, lon=118),  # Center on Indonesia
+                scope='asia',
+                resolution=50,
+                showland=True,
+                landcolor='rgb(243, 243, 243)',
+                coastlinecolor='rgb(204, 204, 204)',
+            ),
+            height=500,
+            title_x=0.5
+        )
+        
+        st.plotly_chart(fig_map, use_container_width=True)
+        
+    except Exception as e:
+        st.warning(f"⚠️ Could not display map: {e}")
+        st.info("💡 Showing alternative visualization...")
+        
+        # Fallback: Simple bar chart
+        fig_bar = px.bar(
+            df_provinces.head(15),  # Top 15 provinces
+            x='Jemaah',
+            y='Provinsi',
+            orientation='h',
+            title="Top 15 Provinsi dengan Jemaah Tunggu Terbanyak",
+            labels={'Jemaah': 'Jumlah Jemaah', 'Provinsi': 'Provinsi'},
+            color='Jemaah',
+            color_continuous_scale='Reds'
+        )
+        fig_bar.update_layout(height=500)
+        st.plotly_chart(fig_bar, use_container_width=True)
+    
+    # Enhanced Data Table with Search and Sorting
+    st.subheader("📋 Detail Distribusi Jemaah per Provinsi")
+    
+    # Add search functionality
+    search_term = st.text_input("🔍 Cari Provinsi:", placeholder="Ketik nama provinsi...")
+    
+    # Filter data based on search
+    if search_term:
+        filtered_df = df_provinces[df_provinces['Provinsi'].str.contains(search_term, case=False)]
+    else:
+        filtered_df = df_provinces
+    
+    # Sort options
+    sort_by = st.selectbox(
+        "📊 Urutkan berdasarkan:",
+        ['Jemaah (Tertinggi)', 'Jemaah (Terendah)', 'Nama Provinsi (A-Z)', 'Nama Provinsi (Z-A)']
+    )
+    
+    if sort_by == 'Jemaah (Tertinggi)':
+        filtered_df = filtered_df.sort_values('Jemaah', ascending=False)
+    elif sort_by == 'Jemaah (Terendah)':
+        filtered_df = filtered_df.sort_values('Jemaah', ascending=True)
+    elif sort_by == 'Nama Provinsi (A-Z)':
+        filtered_df = filtered_df.sort_values('Provinsi', ascending=True)
+    else:
+        filtered_df = filtered_df.sort_values('Provinsi', ascending=False)
+    
+    # Format the dataframe for display (exclude coordinate columns)
+    display_df = filtered_df[['Provinsi', 'Jemaah', 'Persentase']].copy()
+    display_df['Jemaah'] = display_df['Jemaah'].apply(lambda x: f"{x:,}")
+    display_df['Persentase'] = display_df['Persentase'].apply(lambda x: f"{x:.2f}%")
+    
+    # Rename columns for display
+    display_df.columns = ['🏛️ Provinsi', '👥 Jumlah Jemaah', '📊 Persentase']
+    
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        height=400
+    )
+    
+    # Summary statistics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("🏛️ Total Provinsi", len(df_provinces))
+    
+    with col2:
+        max_province = df_provinces.loc[df_provinces['Jemaah'].idxmax()]
+        st.metric("🏆 Provinsi Tertinggi", max_province['Provinsi'], f"{max_province['Jemaah']:,} jemaah")
+    
+    with col3:
+        avg_jemaah = df_provinces['Jemaah'].mean()
+        st.metric("📊 Rata-rata per Provinsi", f"{avg_jemaah:,.0f} jemaah")
+    
+    with col4:
+        top_5_percentage = df_provinces.head(5)['Persentase'].sum()
+        st.metric("🎯 Top 5 Provinsi", f"{top_5_percentage:.1f}% total jemaah")
+    
+    # Economic indicators section (rest remains the same)
     st.subheader("📊 Indikator Ekonomi Terkini")
     col1, col2, col3, col4 = st.columns(4)
     
@@ -883,6 +1071,7 @@ def render_dashboard(historical_data, exchange_rates, economic_indicators):
         <strong>📡 Data Sources:</strong><br>
         • Exchange Rates: {exchange_rates['source']}<br>
         • Economic Indicators: {economic_indicators['source']}<br>
+        • Distribusi Jemaah: Data Simulasi BPKH 2025<br>
         • Last Update: {exchange_rates['timestamp'].strftime('%d %B %Y, %H:%M WIB')}
     </div>
     """, unsafe_allow_html=True)
@@ -893,6 +1082,57 @@ def render_dashboard(historical_data, exchange_rates, economic_indicators):
         st.success("✅ Data berhasil di-refresh!")
         st.balloons()
         st.rerun()
+
+# Additional helper function for alternative map visualization using Folium
+def create_folium_indonesia_map(df_provinces):
+    """Create an alternative Folium map for Indonesia pilgrim distribution"""
+    import folium
+    from folium import plugins
+    
+    # Create base map centered on Indonesia
+    m = folium.Map(
+        location=[-2.5, 118],  # Center of Indonesia
+        zoom_start=5,
+        tiles='OpenStreetMap'
+    )
+    
+    # Add markers for each province (simplified coordinates)
+    province_coords = {
+        'Jawa Barat': [-6.9175, 107.6191],
+        'Jawa Timur': [-7.2504, 112.7688],
+        'Jawa Tengah': [-7.3069, 110.1765],
+        'DKI Jakarta': [-6.2088, 106.8456],
+        'Sumatera Utara': [3.5952, 98.6722],
+        # Add more coordinates as needed
+    }
+    
+    # Add choropleth layer (requires GeoJSON data for full implementation)
+    # This is a simplified version using markers
+    for idx, row in df_provinces.iterrows():
+        if row['Provinsi'] in province_coords:
+            lat, lon = province_coords[row['Provinsi']]
+            
+            # Create popup content
+            popup_content = f"""
+            <div style="width: 200px;">
+                <h4>{row['Provinsi']}</h4>
+                <p><strong>Jemaah:</strong> {row['Jemaah']:,}</p>
+                <p><strong>Persentase:</strong> {row['Persentase']:.2f}%</p>
+            </div>
+            """
+            
+            # Add circle marker with size based on number of pilgrims
+            folium.CircleMarker(
+                location=[lat, lon],
+                radius=min(row['Jemaah']/10000, 30),  # Scale radius
+                popup=folium.Popup(popup_content, max_width=250),
+                color='red',
+                fillColor='red',
+                fillOpacity=0.6,
+                weight=2
+            ).add_to(m)
+    
+    return m
 
 def render_liability_calculator(agents):
     st.header("🧮 Modul Kalkulasi Liabilitas Keuangan Haji")

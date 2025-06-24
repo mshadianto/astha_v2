@@ -1,0 +1,30 @@
+# .streamlit/config.toml
+# Konfigurasi untuk ASTHA-HAJJ-ANALYTICS
+
+[client]
+# Matikan default sidebar navigation
+showSidebarNavigation = false
+
+# Opsi tambahan
+toolbarMode = "minimal"
+
+[server]
+# Port default
+port = 8501
+
+# Konfigurasi untuk development
+headless = false
+runOnSave = true
+allowRunOnSave = true
+
+[browser]
+# Otomatis buka browser
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[theme]
+# Custom theme (opsional)
+# primaryColor = "#2E8B57"
+# backgroundColor = "#FFFFFF"
+# secondaryBackgroundColor = "#F0F2F6"
+# textColor = "#262730"

@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Upgrade pip (mengambil wheel biner terbaru)
+RUN pip install --upgrade pip
+
 # Buat direktori kerja di dalam container
 WORKDIR /app
 
