@@ -29,7 +29,6 @@ pydantic-settings>=2.0.0
 
 # Database & Storage
 sqlalchemy>=2.0.0
-sqlite3  # Built-in with Python
 pymongo>=4.0.0
 
 # Excel & File Processing
